@@ -16,25 +16,29 @@ INSERT INTO services (
     hospital_id,
     service_type_id,
     name,
+    provider,
     description,
     timings,
     eligibility,
+    required_docs,
     contact,
     latitude,
     longitude
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 )
-RETURNING id, hospital_id, service_type_id, latitude, longitude, name, description, timings, eligibility, contact, created_at
+RETURNING id, hospital_id, service_type_id, latitude, longitude, name, description, timings, eligibility, contact, created_at, provider, required_docs
 `
 
 type CreateServiceParams struct {
 	HospitalID    int32   `json:"hospital_id"`
 	ServiceTypeID int32   `json:"service_type_id"`
 	Name          string  `json:"name"`
+	Provider      *string `json:"provider"`
 	Description   *string `json:"description"`
 	Timings       *string `json:"timings"`
 	Eligibility   *string `json:"eligibility"`
+	RequiredDocs  *string `json:"required_docs"`
 	Contact       *string `json:"contact"`
 	Latitude      float64 `json:"latitude"`
 	Longitude     float64 `json:"longitude"`
@@ -45,9 +49,11 @@ func (q *Queries) CreateService(ctx context.Context, arg CreateServiceParams) (S
 		arg.HospitalID,
 		arg.ServiceTypeID,
 		arg.Name,
+		arg.Provider,
 		arg.Description,
 		arg.Timings,
 		arg.Eligibility,
+		arg.RequiredDocs,
 		arg.Contact,
 		arg.Latitude,
 		arg.Longitude,
@@ -65,6 +71,8 @@ func (q *Queries) CreateService(ctx context.Context, arg CreateServiceParams) (S
 		&i.Eligibility,
 		&i.Contact,
 		&i.CreatedAt,
+		&i.Provider,
+		&i.RequiredDocs,
 	)
 	return i, err
 }
@@ -74,8 +82,10 @@ SELECT
     s.id,
     s.name,
     s.description,
+    s.provider,
     s.timings,
     s.eligibility,
+    s.required_docs,
     s.contact,
     s.latitude,
     s.longitude,
@@ -96,8 +106,10 @@ type GetAllServicesRow struct {
 	ID            int32            `json:"id"`
 	Name          string           `json:"name"`
 	Description   *string          `json:"description"`
+	Provider      *string          `json:"provider"`
 	Timings       *string          `json:"timings"`
 	Eligibility   *string          `json:"eligibility"`
+	RequiredDocs  *string          `json:"required_docs"`
 	Contact       *string          `json:"contact"`
 	Latitude      float64          `json:"latitude"`
 	Longitude     float64          `json:"longitude"`
@@ -121,8 +133,10 @@ func (q *Queries) GetAllServices(ctx context.Context) ([]GetAllServicesRow, erro
 			&i.ID,
 			&i.Name,
 			&i.Description,
+			&i.Provider,
 			&i.Timings,
 			&i.Eligibility,
+			&i.RequiredDocs,
 			&i.Contact,
 			&i.Latitude,
 			&i.Longitude,
@@ -146,9 +160,11 @@ const getServiceByID = `-- name: GetServiceByID :one
 SELECT
     s.id,
     s.name,
+    s.provider,
     s.description,
     s.timings,
     s.eligibility,
+    s.required_docs,
     s.contact,
     s.latitude,
     s.longitude,
@@ -168,9 +184,11 @@ WHERE s.id = $1
 type GetServiceByIDRow struct {
 	ID            int32            `json:"id"`
 	Name          string           `json:"name"`
+	Provider      *string          `json:"provider"`
 	Description   *string          `json:"description"`
 	Timings       *string          `json:"timings"`
 	Eligibility   *string          `json:"eligibility"`
+	RequiredDocs  *string          `json:"required_docs"`
 	Contact       *string          `json:"contact"`
 	Latitude      float64          `json:"latitude"`
 	Longitude     float64          `json:"longitude"`
@@ -187,9 +205,11 @@ func (q *Queries) GetServiceByID(ctx context.Context, id int32) (GetServiceByIDR
 	err := row.Scan(
 		&i.ID,
 		&i.Name,
+		&i.Provider,
 		&i.Description,
 		&i.Timings,
 		&i.Eligibility,
+		&i.RequiredDocs,
 		&i.Contact,
 		&i.Latitude,
 		&i.Longitude,
@@ -203,7 +223,7 @@ func (q *Queries) GetServiceByID(ctx context.Context, id int32) (GetServiceByIDR
 }
 
 const getServicesByHospitalID = `-- name: GetServicesByHospitalID :many
-SELECT id, hospital_id, service_type_id, latitude, longitude, name, description, timings, eligibility, contact, created_at FROM services
+SELECT id, hospital_id, service_type_id, latitude, longitude, name, description, timings, eligibility, contact, created_at, provider, required_docs FROM services
 WHERE hospital_id = $1
 ORDER BY created_at DESC
 `
@@ -229,6 +249,8 @@ func (q *Queries) GetServicesByHospitalID(ctx context.Context, hospitalID int32)
 			&i.Eligibility,
 			&i.Contact,
 			&i.CreatedAt,
+			&i.Provider,
+			&i.RequiredDocs,
 		); err != nil {
 			return nil, err
 		}
@@ -241,7 +263,7 @@ func (q *Queries) GetServicesByHospitalID(ctx context.Context, hospitalID int32)
 }
 
 const getServicesByServiceTypeID = `-- name: GetServicesByServiceTypeID :many
-SELECT id, hospital_id, service_type_id, latitude, longitude, name, description, timings, eligibility, contact, created_at FROM services
+SELECT id, hospital_id, service_type_id, latitude, longitude, name, description, timings, eligibility, contact, created_at, provider, required_docs FROM services
 WHERE service_type_id = $1
 ORDER BY created_at DESC
 `
@@ -267,6 +289,8 @@ func (q *Queries) GetServicesByServiceTypeID(ctx context.Context, serviceTypeID 
 			&i.Eligibility,
 			&i.Contact,
 			&i.CreatedAt,
+			&i.Provider,
+			&i.RequiredDocs,
 		); err != nil {
 			return nil, err
 		}
@@ -280,7 +304,7 @@ func (q *Queries) GetServicesByServiceTypeID(ctx context.Context, serviceTypeID 
 
 const getServicesNearLocation = `-- name: GetServicesNearLocation :many
 SELECT
-    s.id, s.hospital_id, s.service_type_id, s.latitude, s.longitude, s.name, s.description, s.timings, s.eligibility, s.contact, s.created_at,
+    s.id, s.hospital_id, s.service_type_id, s.latitude, s.longitude, s.name, s.description, s.timings, s.eligibility, s.contact, s.created_at, s.provider, s.required_docs,
     (
         6371 * acos(
             cos(radians($1)) * cos(radians(s.latitude)) *
@@ -317,6 +341,8 @@ type GetServicesNearLocationRow struct {
 	Eligibility   *string          `json:"eligibility"`
 	Contact       *string          `json:"contact"`
 	CreatedAt     pgtype.Timestamp `json:"created_at"`
+	Provider      *string          `json:"provider"`
+	RequiredDocs  *string          `json:"required_docs"`
 	DistanceKm    int32            `json:"distance_km"`
 }
 
@@ -341,6 +367,8 @@ func (q *Queries) GetServicesNearLocation(ctx context.Context, arg GetServicesNe
 			&i.Eligibility,
 			&i.Contact,
 			&i.CreatedAt,
+			&i.Provider,
+			&i.RequiredDocs,
 			&i.DistanceKm,
 		); err != nil {
 			return nil, err

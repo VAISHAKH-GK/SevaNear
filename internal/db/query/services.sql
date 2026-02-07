@@ -3,14 +3,16 @@ INSERT INTO services (
     hospital_id,
     service_type_id,
     name,
+    provider,
     description,
     timings,
     eligibility,
+    required_docs,
     contact,
     latitude,
     longitude
 ) VALUES (
-    $1, $2, $3, $4, $5, $6, $7, $8, $9
+    $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11
 )
 RETURNING *;
 
@@ -19,8 +21,10 @@ SELECT
     s.id,
     s.name,
     s.description,
+    s.provider,
     s.timings,
     s.eligibility,
+    s.required_docs,
     s.contact,
     s.latitude,
     s.longitude,
@@ -40,9 +44,11 @@ ORDER BY s.created_at DESC;
 SELECT
     s.id,
     s.name,
+    s.provider,
     s.description,
     s.timings,
     s.eligibility,
+    s.required_docs,
     s.contact,
     s.latitude,
     s.longitude,

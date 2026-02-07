@@ -29,6 +29,8 @@ type Service struct {
 	Eligibility   *string          `json:"eligibility"`
 	Contact       *string          `json:"contact"`
 	CreatedAt     pgtype.Timestamp `json:"created_at"`
+	Provider      *string          `json:"provider"`
+	RequiredDocs  *string          `json:"required_docs"`
 }
 
 type ServiceType struct {

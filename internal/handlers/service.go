@@ -112,9 +112,11 @@ func (s *ServiceHandler) PostService(c fiber.Ctx) error {
 		HospitalID    int32   `json:"hospital_id"`
 		ServiceTypeID int32   `json:"service_type_id"`
 		Name          string  `json:"name"`
+		Provider      string  `json:"provider"`
 		Description   string  `json:"description"`
 		Timings       string  `json:"timings"`
 		Eligibility   string  `json:"eligibility"`
+		RequiredDocs  string  `json:"required_docs"`
 		Contact       string  `json:"contact"`
 		Latitude      float64 `json:"latitude"`
 		Longitude     float64 `json:"longitude"`
@@ -133,6 +135,7 @@ func (s *ServiceHandler) PostService(c fiber.Ctx) error {
 			HospitalID:    body.HospitalID,
 			ServiceTypeID: body.ServiceTypeID,
 			Name:          body.Name,
+			Provider:      &body.Provider,
 			Description:   &body.Description,
 			Timings:       &body.Timings,
 			Eligibility:   &body.Eligibility,
