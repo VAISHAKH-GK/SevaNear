@@ -14,9 +14,14 @@ SevaNear is a mobile/web application that helps patients and bystanders discover
 
 Service will include following details.
 
+- Hospital
 - Type of Service
+- Provider
+- Description
 - Timings
-- Eligibility / documentes required
+- Eligibility 
+- Documentes required
+- Location
 - Contact
 
 ## Impact
