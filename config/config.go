@@ -43,7 +43,10 @@ func getEnvBool(key string, defaultValue bool) bool {
 
 func Load() *Config {
 	return &Config{
-		Port:    getEnv("PORT", "3000"),
-		PreFork: getEnvBool("PRE_FORK", true),
+		Port:       getEnv("PORT", "3000"),
+		DBString:   getEnv("GOOSE_DBSTRING", ""),
+		JWTSecret:  getEnv("JWT_SECRET", "secret"),
+		MaxDBConns: getEnvInt("MAX_DB_CONNS", 1),
+		PreFork:    getEnvBool("PRE_FORK", true),
 	}
 }

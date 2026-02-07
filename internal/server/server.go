@@ -6,13 +6,14 @@ import (
 	"sync"
 
 	"github.com/VAISHAKH-GK/SevaNear/config"
+	"github.com/VAISHAKH-GK/SevaNear/internal/db"
 	"github.com/VAISHAKH-GK/SevaNear/internal/middleware"
 	"github.com/gofiber/fiber/v3"
 )
 
 type WebServer struct {
 	*fiber.App
-	// DB     *db.Store
+	DB     *db.Store
 	Config *config.Config
 }
 
@@ -26,11 +27,11 @@ func (s *WebServer) Shutdown(ctx context.Context) error {
 		}
 	})
 
-	// if s.DB != nil {
-	// 	wg.Go(func() {
-	// 		s.DB.Close(ctx)
-	// 	})
-	// }
+	if s.DB != nil {
+		wg.Go(func() {
+			s.DB.Close(ctx)
+		})
+	}
 
 	wg.Wait()
 
@@ -48,13 +49,13 @@ func (s *WebServer) SetupMiddleware() {
 }
 
 func New(cfg *config.Config) *WebServer {
-	// db := db.ConnectDB(cfg.DBString, cfg.MaxDBConns)
+	db := db.ConnectDB(cfg.DBString, cfg.MaxDBConns)
 
 	var server = &WebServer{
 		App: fiber.New(fiber.Config{
 			AppName: "SevaNear - API",
 		}),
-		// DB:     db,
+		DB:     db,
 		Config: cfg,
 	}
 
