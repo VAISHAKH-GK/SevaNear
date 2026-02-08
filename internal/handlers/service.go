@@ -204,7 +204,7 @@ func (s *ServiceHandler) GetServicesByHospitalAndType(c fiber.Ctx) error {
 		})
 	}
 
-	filtered := make([]generated.Service, 0)
+	filtered := make([]generated.GetServicesByHospitalIDRow, 0)
 	for _, svc := range services {
 		if svc.ServiceTypeID == int32(serviceTypeID) {
 			filtered = append(filtered, svc)

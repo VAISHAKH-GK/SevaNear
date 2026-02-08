@@ -85,9 +85,16 @@ HAVING (
 ORDER BY distance_km;
 
 -- name: GetServicesByHospitalID :many
-SELECT * FROM services
-WHERE hospital_id = $1
-ORDER BY created_at DESC;
+-- name: GetServicesByHospitalID :many
+SELECT
+    s.*,
+    h.name AS hospital_name,
+    st.name AS service_type_name
+FROM services s
+JOIN hospitals h ON h.id = s.hospital_id
+JOIN service_types st ON st.id = s.service_type_id
+WHERE s.hospital_id = $1
+ORDER BY s.created_at DESC;
 
 -- name: GetServicesByServiceTypeID :many
 SELECT * FROM services

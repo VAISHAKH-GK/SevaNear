@@ -11,9 +11,8 @@ func SetupCORS() fiber.Handler {
 		AllowOriginsFunc: func(origin string) bool {
 			return true
 		},
-		AllowCredentials: true,
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
-		AllowHeaders:     []string{"Accept", "Authorization", "Content-Type"},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"},
+		AllowHeaders: []string{"Accept", "Authorization", "Content-Type"},
 	})
 }
 

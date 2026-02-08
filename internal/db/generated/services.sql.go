@@ -223,20 +223,44 @@ func (q *Queries) GetServiceByID(ctx context.Context, id int32) (GetServiceByIDR
 }
 
 const getServicesByHospitalID = `-- name: GetServicesByHospitalID :many
-SELECT id, hospital_id, service_type_id, latitude, longitude, name, description, timings, eligibility, contact, created_at, provider, required_docs FROM services
-WHERE hospital_id = $1
-ORDER BY created_at DESC
+SELECT
+    s.id, s.hospital_id, s.service_type_id, s.latitude, s.longitude, s.name, s.description, s.timings, s.eligibility, s.contact, s.created_at, s.provider, s.required_docs,
+    h.name AS hospital_name,
+    st.name AS service_type_name
+FROM services s
+JOIN hospitals h ON h.id = s.hospital_id
+JOIN service_types st ON st.id = s.service_type_id
+WHERE s.hospital_id = $1
+ORDER BY s.created_at DESC
 `
 
-func (q *Queries) GetServicesByHospitalID(ctx context.Context, hospitalID int32) ([]Service, error) {
+type GetServicesByHospitalIDRow struct {
+	ID              int32            `json:"id"`
+	HospitalID      int32            `json:"hospital_id"`
+	ServiceTypeID   int32            `json:"service_type_id"`
+	Latitude        float64          `json:"latitude"`
+	Longitude       float64          `json:"longitude"`
+	Name            string           `json:"name"`
+	Description     *string          `json:"description"`
+	Timings         *string          `json:"timings"`
+	Eligibility     *string          `json:"eligibility"`
+	Contact         *string          `json:"contact"`
+	CreatedAt       pgtype.Timestamp `json:"created_at"`
+	Provider        *string          `json:"provider"`
+	RequiredDocs    *string          `json:"required_docs"`
+	HospitalName    string           `json:"hospital_name"`
+	ServiceTypeName string           `json:"service_type_name"`
+}
+
+func (q *Queries) GetServicesByHospitalID(ctx context.Context, hospitalID int32) ([]GetServicesByHospitalIDRow, error) {
 	rows, err := q.db.Query(ctx, getServicesByHospitalID, hospitalID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Service
+	var items []GetServicesByHospitalIDRow
 	for rows.Next() {
-		var i Service
+		var i GetServicesByHospitalIDRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.HospitalID,
@@ -251,6 +275,8 @@ func (q *Queries) GetServicesByHospitalID(ctx context.Context, hospitalID int32)
 			&i.CreatedAt,
 			&i.Provider,
 			&i.RequiredDocs,
+			&i.HospitalName,
+			&i.ServiceTypeName,
 		); err != nil {
 			return nil, err
 		}
